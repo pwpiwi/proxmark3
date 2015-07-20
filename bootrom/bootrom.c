@@ -132,9 +132,9 @@ void UsbPacketReceived(uint8_t *packet, int len) {
         
         /* Check that the address that we are supposed to write to is within our allowed region */
         if( ((flash_address+AT91C_IFLASH_PAGE_SIZE-1) >= end_addr) || (flash_address < start_addr) ) {
-          /* Disallow write */
-          dont_ack = 1;
-          cmd_send(CMD_NACK,0,0,0,0,0);
+			/* Disallow write */
+			dont_ack = 1;
+			cmd_send(CMD_NACK,0,0,0,0,0);
         } else {
           uint32_t page_n = (flash_address - ((uint32_t)flash_mem)) / AT91C_IFLASH_PAGE_SIZE;
           /* Translate address to flash page and do flash, update here for the 512k part */
@@ -148,7 +148,7 @@ void UsbPacketReceived(uint8_t *packet, int len) {
         while(!((sr = AT91C_BASE_EFC0->EFC_FSR) & AT91C_MC_FRDY));
         if(sr & (AT91C_MC_LOCKE | AT91C_MC_PROGE)) {
           dont_ack = 1;
-          cmd_send(CMD_NACK,0,0,0,0,0);
+          cmd_send(CMD_NACK,sr,0,0,0,0);
         }
       }
     } break;
