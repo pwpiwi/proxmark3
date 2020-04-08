@@ -1,0 +1,52 @@
+# Travis-CI config
+language: c
+
+compiler: gcc
+
+# Test on Linux and MacOS
+jobs:
+  include:
+    - os: osx
+      osx_image: xcode9.4   # OS X 10.13
+    - os: osx
+      osx_image: xcode10    # OS X 10.13
+    - os: osx
+      osx_image: xcode11    # OS X 10.14
+    - os: linux
+      dist: trusty          # Ubuntu 14.04
+    - os: linux
+      dist: xenial          # Ubuntu 16.04
+    - os: linux
+      dist: bionic          # Ubuntu 18.04
+
+git:
+  depth: false
+
+before_install:
+## Install ARM toolchain on Linux.
+## add our homebrew tap for MacOS
+## Note: all dependencies on MacOS should be resolved by the brew install command
+  if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then 
+    sudo apt-get update -qq;
+    sudo apt-get install -y gcc-arm-none-eabi libnewlib-arm-none-eabi libpcsclite-dev;
+  elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+    brew update;
+    brew tap --full pwpiwi/proxmark3;
+  fi
+
+install:
+  if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then 
+    brew install -v --HEAD proxmark3;
+  elif [[ "$TRAVIS_OS_NAME" == "linux" ]]; then 
+    make all;
+  fi
+
+before_script:
+
+script: 
+## for the time being we are satisfied if it can be build and hf mf hardnested runs
+  if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then 
+    proxmark3 /dev/notexists travis_test_commands.scr ;
+  elif [[ "$TRAVIS_OS_NAME" == "linux" ]]; then 
+    ./client/proxmark3  /dev/notexists travis_test_commands.scr ;
+  fi
